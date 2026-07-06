@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Player - Pro UI (Vercel Edition)</title>
+    
+    <!-- Shaka Player with UI Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/controls.min.css">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --emerald: #10B981;
+            --bg-dark: #0F172A;
+            --card-bg: #1E293B;
+            --text-white: #F8FAFC;
+            --text-gray: #94A3B8;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-white); margin: 0; padding: 0; padding-bottom: 90px; }
+        
+        .page { display: none; animation: fadeIn 0.3s; }
+        .page.active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .header-card { background-color: var(--card-bg); margin: 16px; padding: 20px; border-radius: 24px; display: flex; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .header-icon { background-color: rgba(16, 185, 129, 0.2); color: var(--emerald); width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 16px; }
+        .header-text h2 { margin: 0; font-size: 18px; font-weight: 600; }
+        .header-text p { margin: 4px 0 0; color: var(--text-gray); font-size: 12px; }
+        .header-right-icon { margin-left: auto; color: var(--emerald); font-size: 18px; background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 50%; }
+
+        .section-title { color: var(--text-white); font-size: 14px; font-weight: 600; margin: 24px 16px 12px; display: flex; align-items: center; }
+        .section-title::before { content: ''; display: inline-block; width: 3px; height: 14px; background-color: var(--emerald); margin-right: 8px; border-radius: 2px; }
+
+        .card { background-color: var(--card-bg); margin: 0 16px 16px; padding: 16px; border-radius: 20px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group:last-child { margin-bottom: 0; }
+        .input-group label { display: block; color: var(--text-gray); font-size: 12px; margin-bottom: 8px; }
+        .input-group input, .input-group select { width: 100%; background-color: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.05); color: var(--text-white); padding: 14px; border-radius: 12px; font-size: 14px; outline: none; }
+        .row { display: flex; gap: 12px; }
+        .row .input-group { flex: 1; }
+
+        .player-wrapper { margin: 16px; border-radius: 16px; overflow: hidden; border: 2px solid var(--emerald); display: none; background: #000; position: relative; }
+        video { width: 100%; display: block; }
+        
+        .fab-play { position: fixed; bottom: 100px; right: 20px; background-color: var(--emerald); color: var(--bg-dark); width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); cursor: pointer; z-index: 10; }
+        .fab-save { position: fixed; bottom: 100px; right: 90px; background-color: rgba(16, 185, 129, 0.2); color: var(--emerald); width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: none; cursor: pointer; z-index: 10; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--card-bg); display: flex; justify-content: space-around; padding: 12px 16px 20px; border-top-left-radius: 24px; border-top-right-radius: 24px; z-index: 100; }
+        .nav-item { display: flex; align-items: center; justify-content: center; color: var(--text-gray); padding: 10px 20px; border-radius: 24px; cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.3s; }
+        .nav-item i { font-size: 18px; margin-right: 8px; }
+        .nav-item.active { background-color: var(--emerald); color: var(--text-white); }
+        .nav-item:not(.active) span { display: none; }
+        .nav-item:not(.active) i { margin-right: 0; }
+    </style>
+</head>
+<body>
+
+    <div id="page-home" class="page active-page">
+        <div class="header-card">
+            <div class="header-icon"><i class="fa-solid fa-cloud"></i></div>
+            <div class="header-text">
+                <h2>Stream Player</h2>
+                <p>Direct network playback (Vercel)</p>
+            </div>
+            <i class="fa-solid fa-rotate-right header-right-icon"></i>
+        </div>
+
+        <div id="player-container" class="player-wrapper" data-shaka-player-container>
+            <video id="videoPlayer" data-shaka-player autoplay></video>
+        </div>
+
+        <div class="section-title">Stream Info</div>
+        <div class="card">
+            <div class="input-group">
+                <input type="text" id="streamUrl" placeholder="Media Stream URL">
+            </div>
+        </div>
+
+        <div class="section-title">DRM Protection</div>
+        <div class="card">
+            <div class="input-group">
+                <label>DrmScheme</label>
+                <select id="drmScheme"><option value="none">none</option><option value="clearkey">clearkey</option></select>
+            </div>
+            <div class="row">
+                <div class="input-group"><input type="text" id="drmKid" placeholder="KID"></div>
+                <div class="input-group"><input type="text" id="drmKey" placeholder="KEY"></div>
+            </div>
+        </div>
+
+        <div class="section-title">Request Headers (Proxy Required)</div>
+        <div class="card">
+            <div class="input-group">
+                <input type="text" id="headerReferer" placeholder="Referer (e.g., https://example.com/)">
+            </div>
+        </div>
+
+        <button class="fab-save"><i class="fa-solid fa-floppy-disk"></i></button>
+        <button class="fab-play" onclick="startPlayback()"><i class="fa-solid fa-play"></i></button>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active"><i class="fa-solid fa-house"></i><span>Home</span></div>
+        <div class="nav-item"><i class="fa-regular fa-bookmark"></i><span>Saved</span></div>
+        <div class="nav-item"><i class="fa-solid fa-list-check"></i><span>Lists</span></div>
+        <div class="nav-item"><i class="fa-solid fa-gear"></i><span>Settings</span></div>
+    </div>
+
+    <script>
+        let player;
+        
+        // Vercel Serverless Function Proxy URL (Relative path)
+        const PROXY_SERVER_URL = "/api/proxy"; 
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            shaka.polyfill.installAll();
+            
+            if (shaka.Player.isBrowserSupported()) {
+                const video = document.getElementById('videoPlayer');
+                const videoContainer = document.getElementById('player-container');
+                
+                player = new shaka.Player(video);
+                
+                const ui = new shaka.ui.Overlay(player, videoContainer, video);
+                const config = {
+                    controlPanelElements: ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen', 'overflow_menu']
+                };
+                ui.configure(config);
+            }
+        });
+
+        async function startPlayback() {
+            let url = document.getElementById('streamUrl').value;
+            const drmScheme = document.getElementById('drmScheme').value;
+            const kid = document.getElementById('drmKid').value;
+            const key = document.getElementById('drmKey').value;
+            const referer = document.getElementById('headerReferer').value;
+
+            if (!url) return alert("Please enter a stream URL");
+
+            // Proxy Logic for Vercel
+            if (referer) {
+                url = `${PROXY_SERVER_URL}?url=${encodeURIComponent(url)}&referer=${encodeURIComponent(referer)}`;
+            }
+
+            document.getElementById('player-container').style.display = 'block';
+
+            if (drmScheme === 'clearkey' && kid && key) {
+                player.configure({ drm: { clearKeys: { [kid]: key } } });
+            } else {
+                player.configure({ drm: { clearKeys: {} } });
+            }
+
+            try {
+                await player.load(url);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (e) {
+                console.error("Error Detail:", e);
+                alert("Error playing stream.");
+            }
+        }
+    </script>
+</body>
+</html>
