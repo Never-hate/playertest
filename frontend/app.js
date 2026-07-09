@@ -2,7 +2,7 @@ const video = document.getElementById('videoPlayer');
 const errorMsg = document.getElementById('errorMsg');
 const qualitySelect = document.getElementById('qualitySelect');
 
-const PROXY_BASE = 'http://localhost:3000/proxy?';
+const PROXY_BASE = 'http://localhost:8080/proxy?';
 
 let hlsInstance = null;
 let shakaInstance = null;
