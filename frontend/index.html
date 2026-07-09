@@ -10,11 +10,11 @@
     <style>
         body { font-family: system-ui, sans-serif; background: #0f0f0f; color: #f1f1f1; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
         input[type="text"] { flex: 1; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; }
-        button, select { padding: 10px 16px; cursor: pointer; background: #0056b3; color: white; border: none; border-radius: 6px; }
+        button, select { padding: 10px 16px; cursor: pointer; background: #0056b3; color: white; border: none; border-radius: 6px; white-space: nowrap; }
         button:hover, select:hover { background: #004494; }
-        .video-wrapper { position: relative; width: 100%; background: #000; border-radius: 8px; overflow: hidden; }
+        .video-wrapper { position: relative; width: 100%; background: #000; border-radius: 8px; overflow: hidden; margin-top: 20px; }
         video { width: 100%; aspect-ratio: 16/9; display: block; }
         .toolbar { display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap; }
         .error { color: #ff6b6b; margin-bottom: 15px; padding: 10px; background: rgba(255,0,0,0.1); border-radius: 6px; display: none; }
@@ -26,6 +26,9 @@
         
         <div class="input-group">
             <input type="text" id="streamUrl" placeholder="Enter remote .m3u8 or .mpd URL">
+        </div>
+        <div class="input-group">
+            <input type="text" id="refererUrl" placeholder="Enter Referer URL (e.g., https://example.com/)">
             <button onclick="loadStream()">Load Stream</button>
         </div>
         
