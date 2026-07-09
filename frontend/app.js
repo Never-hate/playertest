@@ -2,8 +2,7 @@ const video = document.getElementById('videoPlayer');
 const errorMsg = document.getElementById('errorMsg');
 const qualitySelect = document.getElementById('qualitySelect');
 
-// Points to the Node.js backend
-const PROXY_URL = 'http://localhost:3000/proxy?url=';
+const PROXY_BASE = 'http://localhost:3000/proxy?';
 
 let hlsInstance = null;
 let shakaInstance = null;
@@ -20,11 +19,18 @@ function clearError() {
 async function loadStream() {
     clearError();
     const rawUrl = document.getElementById('streamUrl').value.trim();
+    const refererUrl = document.getElementById('refererUrl').value.trim();
+
     if (!rawUrl) return showError('Please enter a stream URL');
 
-    const proxiedUrl = PROXY_URL + encodeURIComponent(rawUrl);
+    // Proxy URL তৈরি করা (Referer থাকলে অ্যাড করা)
+    let proxiedUrl = PROXY_BASE;
+    if (refererUrl) {
+        proxiedUrl += `referer=${encodeURIComponent(refererUrl)}&`;
+    }
+    proxiedUrl += `url=${encodeURIComponent(rawUrl)}`;
 
-    // Destroy existing instances on new load
+    // আগের প্লেয়ার ইনস্ট্যান্স রিমুভ করা
     if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
     if (shakaInstance) { await shakaInstance.destroy(); shakaInstance = null; }
     qualitySelect.innerHTML = '<option value="-1">Auto Quality</option>';
@@ -63,7 +69,6 @@ function initHLS(url) {
             if (data.fatal) showError(`HLS Error: ${data.type}`);
         });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Native Safari fallback
         video.src = url;
         video.addEventListener('loadedmetadata', () => video.play());
     }
@@ -111,10 +116,7 @@ async function initShaka(url) {
     }
 }
 
-// UI Controls
-function changeSpeed(speed) { 
-    video.playbackRate = parseFloat(speed); 
-}
+function changeSpeed(speed) { video.playbackRate = parseFloat(speed); }
 
 async function togglePiP() {
     if (document.pictureInPictureElement) {
